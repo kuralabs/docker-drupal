@@ -71,7 +71,8 @@ RUN mkdir -p /var/www/drupal \
 #       See https://getcomposer.org/root
 USER www-data
 WORKDIR /var/www/drupal
-RUN composer install
+RUN composer require drush/drush \
+    && composer install
 
 
 # Install files
