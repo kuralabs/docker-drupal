@@ -83,6 +83,15 @@ function wait_for_php_fpm {
     fi
 }
 
+# Copy configuration files if new mount
+if find /var/www/drupal/sites/default -mindepth 1 | read; then
+   echo "Site is mounted. Skipping copy ..."
+else
+   echo "Site is empty. Copying base files ..."
+   cp -R /var/www/drupal/sites/.default/* /var/www/drupal/sites/default
+   chown -R www-data:www-data /var/www/drupal/sites/default
+fi
+
 ##################
 # Initialization #
 ##################
@@ -203,8 +212,8 @@ if echo "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE
     echo ""
     echo "Hostname:     127.0.0.1:3306"
     echo "Username:     ${DRUPAL_APP}"
-    echo "Password:     ${MYSQL_USER_PASSWORD}"
     echo "Database:     ${DRUPAL_APP}"
+    echo "Password:     ${MYSQL_USER_PASSWORD}"
     echo ""
     echo "Please securely store these credentials!"
     echo "*****************************************************************"

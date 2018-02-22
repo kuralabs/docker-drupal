@@ -32,6 +32,7 @@ set -o nounset
 # Create mount points
 sudo mkdir -p "/srv/${DRUPAL_APP}/mysql"
 sudo mkdir -p "/srv/${DRUPAL_APP}/logs"
+sudo mkdir -p "/srv/${DRUPAL_APP}/site"
 
 # Stop the running container
 docker stop "${DRUPAL_APP}" || true
@@ -50,6 +51,7 @@ docker run --detach --init \
     --publish 8080:8080 \
     --volume "/srv/${DRUPAL_APP}/mysql":/var/lib/mysql \
     --volume "/srv/${DRUPAL_APP}/logs":/var/log \
+    --volume "/srv/${DRUPAL_APP}/site":/var/www/drupal/sites/default \
     --env MYSQL_ROOT_PASSWORD="[YOUR_MYSQL_ROOT_PASSWORD]" \
     --env DRUPAL_APP="[YOUR_DRUPAL_APP]" \
     kuralabs/docker-drupal:latest

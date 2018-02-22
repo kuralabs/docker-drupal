@@ -72,7 +72,8 @@ RUN mkdir -p /var/www/drupal \
 USER www-data
 WORKDIR /var/www/drupal
 RUN composer require drush/drush \
-    && composer install
+    && composer install \
+    && cp -R /var/www/drupal/sites/default /var/www/drupal/sites/.default
 
 
 # Install files
