@@ -12,7 +12,7 @@ RUN echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8"
     && apt-get --yes --no-install-recommends install \
         locales tzdata sudo \
         ca-certificates apt-transport-https software-properties-common \
-        bash-completion iproute2 curl unzip nano tree \
+        bash-completion iproute2 curl unzip nano tree git \
     && rm -rf /var/lib/apt/lists/*
 ENV LANG en_US.UTF-8
 
@@ -41,7 +41,8 @@ RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
         nginx \
         php7.0-fpm \
-        php7.0-mbstring php7.0-xml php7.0-curl php7.0-zip php7.0-gd php7.0-mysql \
+        php7.0-mbstring php7.0-xml php7.0-curl php7.0-zip php7.0-gd \
+        php7.0-mysql php7.0-json php7.0-opcache \
         composer \
     && rm -rf /var/lib/apt/lists/* \
     && rm /etc/nginx/sites-enabled/default \
