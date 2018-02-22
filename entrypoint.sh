@@ -16,6 +16,15 @@ if [ -z "${MYSQL_ROOT_PASSWORD_SET}" ]; then
     exit 1
 fi
 
+DRUPAL_APP_SET=${DRUPAL_APP:-}
+
+if [ -z "${DRUPAL_APP}" ]; then
+    echo "Please set Drupal application name:"
+    echo "    docker run -e DRUPAL_APP=<myapp> ... kuralabs/docker-drupal:latest ..."
+    echo "See README.rst for more information on usage."
+    exit 1
+fi
+
 # Logging
 for i in mysql,mysql nginx,root supervisor,root; do
 
@@ -29,15 +38,6 @@ for i in mysql,mysql nginx,root supervisor,root; do
         echo "Directory /var/log/${directory} already setup ..."
     fi
 done
-
-# Copy configuration files if new mount
-if find /var/www/drupal/config -mindepth 1 | read; then
-   echo "Configuration is mounted. Skipping copy ..."
-else
-   echo "First configuration. Copying config files ..."
-   cp -R /var/www/drupal/config.package/* /var/www/drupal/config
-   chown -R www-data:www-data /var/www/drupal/config
-fi
 
 ##################
 # Waits          #
@@ -160,9 +160,9 @@ password=${MYSQL_ROOT_PASSWORD}
 " > ~/.my.cnf
 
 # Create database
-if ! echo "USE drupal;" | mysql &> /dev/null; then
-    echo "Creating drupal database ..."
-    echo "CREATE DATABASE drupal;" | mysql
+if ! echo "USE ${DRUPAL_APP};" | mysql &> /dev/null; then
+    echo "Creating ${DRUPAL_APP} database ..."
+    echo "CREATE DATABASE ${DRUPAL_APP};" | mysql
 else
     echo "Database already exists. Continue ..."
 fi
@@ -171,24 +171,24 @@ fi
 # Drupal      #
 ##################
 
-if echo "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE table_schema = 'drupal';" | mysql | grep 0 &> /dev/null; then
+if echo "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE table_schema = '${DRUPAL_APP}';" | mysql | grep 0 &> /dev/null; then
 
     echo "Database is empty, installing Drupal for the first time ..."
 
     # Create standard user and grant permissions
     MYSQL_USER_PASSWORD=$(openssl rand -base64 32)
 
-    if ! echo "SELECT COUNT(*) FROM mysql.user WHERE user = 'drupal';" | mysql | grep 1 &> /dev/null; then
+    if ! echo "SELECT COUNT(*) FROM mysql.user WHERE user = '${DRUPAL_APP}';" | mysql | grep 1 &> /dev/null; then
 
         echo "Creating drupal database user ..."
 
-        echo "CREATE USER 'drupal'@'localhost' IDENTIFIED BY '${MYSQL_USER_PASSWORD}';
-              GRANT ALL PRIVILEGES ON drupal.* TO 'drupal'@'localhost';
+        echo "CREATE USER '${DRUPAL_APP}'@'localhost' IDENTIFIED BY '${MYSQL_USER_PASSWORD}';
+              GRANT ALL PRIVILEGES ON ${DRUPAL_APP}.* TO '${DRUPAL_APP}'@'localhost';
               FLUSH PRIVILEGES;" | mysql
     else
         echo "Drupal not installed but user was created. Resetting password ..."
 
-        echo "ALTER USER 'drupal'@'localhost' IDENTIFIED BY '${MYSQL_USER_PASSWORD}';
+        echo "ALTER USER '${DRUPAL_APP}'@'localhost' IDENTIFIED BY '${MYSQL_USER_PASSWORD}';
               FLUSH PRIVILEGES;" | mysql
     fi
 
@@ -202,37 +202,13 @@ if echo "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE
     echo "Use the following parameters in 'Database Setup':"
     echo ""
     echo "Hostname:     127.0.0.1:3306"
-    echo "Username:     drupal"
+    echo "Username:     ${DRUPAL_APP}"
     echo "Password:     ${MYSQL_USER_PASSWORD}"
-    echo "Database:     drupal"
+    echo "Database:     ${DRUPAL_APP}"
     echo ""
     echo "Please securely store these credentials!"
     echo "*****************************************************************"
     echo -e "${NO_COLOR}"
-
-    # We could use the following command to install Drupal, but it could
-    # imply:
-    #
-    # - To pass environment variables that only will be use the first time.
-    # - Force to user to run the container interactively the first time.
-    #
-    # Both are ugly. A better approach could be to make Drupal store the
-    # database credentials and in the web UI just ask for Company Name, Company
-    # email, admin email and admin password only, but this will require support
-    # from the application.
-
-    # sudo -u www-data php artisan app:configure -vvv \
-    #     --db-host=127.0.0.1 \
-    #     --db-port=3306 \
-    #     --db-name=drupal \
-    #     --db-username=drupal \
-    #     --db-password="${MYSQL_USER_PASSWORD}" \
-    #     --no-interaction \
-    #     --company-name="Company Name" \
-    #     --company-email="info@company.com" \
-    #     --admin-email="info@company.com" \
-    #     --admin-password="AwesomeAdminPassword1$"
-
 else
     echo "Drupal already installed. Continue ..."
 fi

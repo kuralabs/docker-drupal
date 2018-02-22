@@ -6,7 +6,6 @@ set -o nounset
 # Create mount points
 sudo mkdir -p "/srv/${DRUPAL_APP}/mysql"
 sudo mkdir -p "/srv/${DRUPAL_APP}/logs"
-sudo mkdir -p "/srv/${DRUPAL_APP}/config"
 
 # Stop the running container
 docker stop "${DRUPAL_APP}" || true
@@ -25,7 +24,6 @@ docker run --detach --init \
     --publish 8080:8080 \
     --volume "/srv/${DRUPAL_APP}/mysql":/var/lib/mysql \
     --volume "/srv/${DRUPAL_APP}/logs":/var/log \
-    --volume "/srv/${DRUPAL_APP}/config":"/var/www/${DRUPAL_APP}/config" \
     --env MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD}" \
     --env DRUPAL_APP="${DRUPAL_APP}" \
     --env TZ=America/Costa_Rica \
