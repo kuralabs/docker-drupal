@@ -50,29 +50,27 @@ RUN apt-get update \
 
 
 # Install Drupal
-ENV DRUPAL_VERSION 1.1.11
+ENV DRUPAL_VERSION 8.4.5
 
 WORKDIR /tmp/
-RUN mkdir -p /var/www/drupal/root \
+RUN mkdir -p /var/www/drupal \
     && curl \
         --location \
-        -o drupal.zip \
-        https://github.com/drupal/drupal/archive/${DRUPAL_VERSION}.zip \
-    && unzip drupal.zip \
-    && rm drupal.zip \
+        -o drupal.tar.gz \
+        http://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz \
+    && tar -zxvf drupal.tar.gz \
+    && rm drupal.tar.gz \
     && find drupal-*/ -mindepth 1 -maxdepth 1 -exec mv -t /var/www/drupal/ -- {} + \
     && rmdir drupal-* \
     && chown -R www-data:www-data /var/www/drupal
 
 
-# Install dependencies and config files
+# Install dependencies
 # NOTE: Change to www-data as composer should never run as root.
 #       See https://getcomposer.org/root
 USER www-data
 WORKDIR /var/www/drupal
-RUN composer install \
-    && php artisan vendor:publish --provider="Fideloper\Proxy\TrustedProxyServiceProvider" \
-    && cp -R /var/www/drupal/config /var/www/drupal/config.package
+RUN composer install
 
 
 # Install files
