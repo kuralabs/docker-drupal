@@ -1,0 +1,19 @@
+server {
+    listen 8080 default_server;
+    listen [::]:8080 default_server;
+
+    server_name _;
+    root /var/www/drupal/root;
+
+    # Static files
+    location ~ ^/(public|modules|vendor)/(.*\.(ico|gif|jpg|jpeg|png|js|css|less|sass|font|woff|woff2|eot|ttf|svg))$ {
+        alias /var/www/drupal/$1/$2;
+    }
+
+    # Front controller
+    location / {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME /var/www/drupal/index.php;
+        fastcgi_pass unix:/run/php/php7.0-fpm.sock;
+    }
+}
