@@ -95,7 +95,8 @@ COPY supervisord/*.conf /etc/supervisor/conf.d/
 
 COPY nginx/drupal /etc/nginx/sites-available/drupal
 RUN chown www-data:www-data /etc/nginx/sites-available/drupal \
-    && ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled
+    && ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled \
+    && ln -s /var/www/drupal/vendor/bin/drush /usr/local/bin/
 
 
 # Start supervisord

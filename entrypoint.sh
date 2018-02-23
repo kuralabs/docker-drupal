@@ -85,11 +85,40 @@ function wait_for_php_fpm {
 
 # Copy configuration files if new mount
 if find /var/www/drupal/sites/default -mindepth 1 | read; then
-   echo "Site is mounted. Skipping copy ..."
+    echo "Site is mounted. Skipping copy ..."
 else
-   echo "Site is empty. Copying base files ..."
-   cp -R /var/www/drupal/sites/.default/* /var/www/drupal/sites/default
-   chown -R www-data:www-data /var/www/drupal/sites/default
+    echo "Site is empty. Copying base files ..."
+    cp -R /var/www/drupal/sites/.default/* /var/www/drupal/sites/default
+    chown -R www-data:www-data /var/www/drupal/sites/default
+    chmod u+w /var/www/drupal/sites/default
+
+    cat > /var/www/drupal/sites/default/composer.json <<DELIM
+{
+    "name": "${DRUPAL_APP}",
+    "description": "A Drupal Website",
+    "type": "project",
+    "license": "GPL-2.0+",
+    "repositories": {
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
+    },
+    "extra": {
+        "installer-paths": {
+            "../../core": ["type:drupal-core"],
+            "modules/contrib/{\$name}": ["type:drupal-module"],
+            "themes/contrib/{\$name}": ["type:drupal-theme"]
+        }
+    },
+    "require": {
+        "composer/installers": "^1.5",
+        "drupal/ctools": "^3.0"
+    }
+}
+DELIM
+    chown www-data:www-data /var/www/drupal/sites/default/composer.json
+
 fi
 
 ##################
