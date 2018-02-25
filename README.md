@@ -24,10 +24,11 @@ Adapt the following script to your needs:
 ```bash
 #!/usr/bin/env bash
 
-DRUPAL_APP="myapp"
-
 set -o errexit
 set -o nounset
+
+DRUPAL_APP="myapp"
+MYSQL_ROOT_PASSWORD="[YOUR_MYSQL_ROOT_PASSWORD]"
 
 # Create mount points
 sudo mkdir -p "/srv/${DRUPAL_APP}/mysql"
@@ -52,8 +53,8 @@ docker run --detach --init \
     --volume "/srv/${DRUPAL_APP}/mysql":/var/lib/mysql \
     --volume "/srv/${DRUPAL_APP}/logs":/var/log \
     --volume "/srv/${DRUPAL_APP}/site":/var/www/drupal/sites/default \
-    --env MYSQL_ROOT_PASSWORD="[YOUR_MYSQL_ROOT_PASSWORD]" \
-    --env DRUPAL_APP="[YOUR_DRUPAL_APP]" \
+    --env MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD}" \
+    --env DRUPAL_APP="${DRUPAL_APP}" \
     kuralabs/docker-drupal:latest
 ```
 
